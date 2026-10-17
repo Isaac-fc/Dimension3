@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Academia Estelar · Registro de cadetes</title>
+<style>
+*{box-sizing:border-box}
+:root{--violet:#7c5cff;--pink:#ff6bd6;--cyan:#5ee7ff;--gold:#ffd166;--err:#ff7b8a;--ok:#6ff2b0;--text:#eef0ff;--muted:#a9a6d6;color-scheme:dark}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--text);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  background:radial-gradient(1200px 700px at 80% -10%,#3b1f8f 0,transparent 60%),radial-gradient(900px 600px at 0% 100%,#0e3a6e 0,transparent 55%),#08061f;
+  padding:max(20px,env(safe-area-inset-top)) 18px max(28px,env(safe-area-inset-bottom));overflow-x:hidden}
+#stars,#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#stars{z-index:0}#confetti{z-index:50}
+
+/* Planeta decorativo */
+.planet{position:fixed;top:-90px;right:-70px;width:300px;height:300px;border-radius:50%;z-index:0;opacity:.9;
+  background:radial-gradient(circle at 30% 28%,#ffd9a0,#ff8a5c 38%,#b2305f 70%,#4a1566);
+  box-shadow:inset -40px -30px 70px rgba(0,0,0,.55),0 0 90px rgba(255,107,214,.35);animation:float 9s ease-in-out infinite}
+.planet::after{content:"";position:absolute;left:-60px;right:-60px;top:50%;height:60px;margin-top:-30px;border-radius:50%;
+  border:6px solid rgba(255,230,180,.45);transform:rotate(-18deg);box-shadow:0 0 18px rgba(255,220,160,.3)}
+.moon{position:fixed;left:-40px;bottom:12%;width:120px;height:120px;border-radius:50%;z-index:0;
+  background:radial-gradient(circle at 35% 30%,#fff,#cfd3ef 45%,#7d83b5);box-shadow:inset -18px -12px 26px rgba(0,0,0,.5),0 0 40px rgba(180,190,255,.25);animation:float 11s ease-in-out infinite reverse}
+@keyframes float{50%{transform:translateY(18px) rotate(3deg)}}
+
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto}
+header{text-align:center;margin:10px 0 28px}
+h1{margin:0;font-size:clamp(2rem,6vw,3.4rem);letter-spacing:.5px;line-height:1.1;
+  background:linear-gradient(90deg,var(--cyan),var(--violet) 45%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+header p{margin:10px auto 0;max-width:46ch;color:var(--muted);font-size:1.05rem}
+.grid{display:grid;grid-template-columns:1.25fr .85fr;gap:24px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}.planet{width:200px;height:200px;top:-70px;right:-60px}}
+
+.card{background:linear-gradient(160deg,rgba(40,32,100,.62),rgba(14,12,48,.7));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.14);border-radius:22px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.45),0 0 0 1px rgba(124,92,255,.15)}
+.card.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+h2{margin:0 0 4px;font-size:1.25rem}
+.sub{margin:0 0 18px;color:var(--muted);font-size:.92rem}
+
+.field{margin-top:16px}
+.field>label,.field>.lbl{display:block;font-weight:700;font-size:.9rem;margin-bottom:6px;color:#d9d7ff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.row2{grid-template-columns:1fr}}
+input[type=text],input[type=number],input[type=password],select,textarea{width:100%;padding:12px 14px;font:inherit;color:var(--text);
+  background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.18);border-radius:12px;transition:border-color .2s,box-shadow .2s,background .2s}
+select option{background:#14103a}
+input::placeholder,textarea::placeholder{color:#7f7cb0}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 4px rgba(94,231,255,.18);background:rgba(255,255,255,.09)}
+.field.bad input,.field.bad select,.field.bad textarea{border-color:var(--err);box-shadow:0 0 0 4px rgba(255,123,138,.14)}
+.field.good input[type=text],.field.good input[type=number],.field.good input[type=password],.field.good select{border-color:rgba(111,242,176,.7)}
+.msg{min-height:1.1em;margin:5px 2px 0;font-size:.82rem;color:var(--err)}
+.pw{position:relative}.pw input{padding-right:48px}
+.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:38px;height:34px;border:0;border-radius:9px;background:transparent;color:var(--muted);cursor:pointer;font-size:1.05rem}
+.eye:hover{background:rgba(255,255,255,.1)}
+.meter{height:7px;margin-top:8px;border-radius:9px;background:rgba(255,255,255,.1);overflow:hidden}
+.meter i{display:block;height:100%;width:0;border-radius:9px;transition:width .3s,background .3s}
+.hint{font-size:.8rem;color:var(--muted);margin-top:4px}
+
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.pill{position:relative}
+.pill input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.pill span{display:inline-block;padding:8px 15px;border-radius:99px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);transition:all .2s}
+.pill:hover span{border-color:var(--violet)}
+.pill input:checked+span{background:linear-gradient(135deg,var(--violet),var(--pink));border-color:transparent;box-shadow:0 6px 18px rgba(124,92,255,.45)}
+.pill input:focus-visible+span{outline:2px solid var(--cyan);outline-offset:2px}
+.counter{text-align:right;font-size:.8rem;color:var(--muted);margin-top:4px}
+.terms{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.terms input{width:20px;height:20px;margin-top:2px;accent-color:var(--pink)}
+
+.actions{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}
+button.btn{font:inherit;font-weight:700;border:0;border-radius:14px;padding:13px 24px;cursor:pointer;color:#fff;transition:transform .15s,box-shadow .2s}
+.btn.main{flex:1;min-width:180px;background:linear-gradient(120deg,var(--violet),var(--pink) 60%,#ff9a62);box-shadow:0 10px 28px rgba(255,107,214,.35)}
+.btn.main:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(255,107,214,.5)}
+.btn.ghost{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)}
+.btn.ghost:hover{background:rgba(255,255,255,.18)}
+button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* Credencial */
+.badge{position:sticky;top:20px;text-align:center;overflow:hidden}
+.badge::before{content:"";position:absolute;inset:-60%;background:conic-gradient(from 0deg,transparent,rgba(94,231,255,.25),transparent 30%,rgba(255,107,214,.22),transparent 60%);animation:spin 9s linear infinite}
+.badge>*{position:relative}
+@keyframes spin{to{transform:rotate(360deg)}}
+.badge .tag{font-size:.75rem;letter-spacing:3px;color:var(--gold);font-weight:700}
+.avatar{width:112px;height:112px;margin:16px auto 12px;border-radius:50%;display:grid;place-items:center;font-size:3.4rem;
+  background:radial-gradient(circle at 30% 25%,#5a4bd1,#1b1450);border:3px solid var(--cyan);box-shadow:0 0 30px rgba(94,231,255,.4)}
+.badge h3{margin:0;font-size:1.45rem;word-break:break-word}
+.badge dl{margin:16px 0 0;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:.92rem}
+.badge dt{color:var(--muted)}.badge dd{margin:0;font-weight:700}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.tags span{font-size:.78rem;padding:3px 10px;border-radius:99px;background:rgba(94,231,255,.15);border:1px solid rgba(94,231,255,.4);color:var(--cyan)}
+.stamp{margin-top:18px;display:inline-block;padding:6px 18px;border:3px solid var(--ok);color:var(--ok);font-weight:800;letter-spacing:3px;border-radius:10px;transform:rotate(-6deg) scale(0);opacity:0;transition:all .5s cubic-bezier(.3,1.6,.5,1)}
+.badge.ok .stamp{transform:rotate(-6deg) scale(1);opacity:1}
+.barcode{height:34px;margin-top:18px;border-radius:4px;opacity:.7;background:repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 5px,#fff 5px 6px,transparent 6px 10px)}
+
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);z-index:60;padding:13px 22px;border-radius:14px;max-width:90vw;
+  background:rgba(20,16,60,.95);border:1px solid var(--cyan);box-shadow:0 10px 30px rgba(0,0,0,.5);transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+#toast.show{transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="planet" aria-hidden="true"></div>
+<div class="moon" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header>
+    <h1>Academia Estelar</h1>
+    <p>Completa tu registro y mira cómo se arma tu credencial de cadete en tiempo real.</p>
+  </header>
+
+  <div class="grid">
+    <form id="registro" class="card" novalidate autocomplete="off">
+      <h2>Registro de cadetes</h2>
+      <p class="sub">Todos los campos son obligatorios, salvo los comentarios.</p>
+
+      <div class="field" data-f="nombre">
+        <label for="nombre">Nombre completo</label>
+        <input type="text" id="nombre" name="nombre" maxlength="40" placeholder="Ej. Valeria Ramírez">
+        <p class="msg"></p>
+      </div>
+
+      <div class="row2">
+        <div class="field" data-f="correo">
+          <label for="correo">Correo electrónico</label>
+          <input type="text" id="correo" name="correo" placeholder="cadete@academia.com">
+          <p class="msg"></p>
+        </div>
+        <div class="field" data-f="edad">
+          <label for="edad">Edad</label>
+          <input type="number" id="edad" name="edad" placeholder="18">
+          <p class="msg"></p>
+        </div>
+      </div>
+
+      <div class="field" data-f="clave">
+        <label for="clave">Contraseña</label>
+        <div class="pw">
+          <input type="password" id="clave" name="clave" placeholder="Mínimo 8 caracteres">
+          <button type="button" class="eye" data-t="clave" aria-label="Mostrar u ocultar contraseña">👁</button>
+        </div>
+        <div class="meter"><i id="fuerza"></i></div>
+        <p class="hint" id="fuerzaTxt">Fuerza de la contraseña</p>
+        <p class="msg"></p>
+      </div>
+
+      <div class="field" data-f="clave2">
+        <label for="clave2">Confirmar contraseña</label>
+        <div class="pw">
+          <input type="password" id="clave2" name="clave2" placeholder="Repite tu contraseña">
+          <button type="button" class="eye" data-t="clave2" aria-label="Mostrar u ocultar confirmación">👁</button>
+        </div>
+        <p class="msg"></p>
+      </div>
+
+      <div class="field" data-f="planeta">
+        <label for="planeta">Planeta favorito</label>
+        <select id="planeta" name="planeta">
+          <option value="">Selecciona un planeta</option>
+          <option>Mercurio</option><option>Venus</option><option>Tierra</option>
+          <option>Marte</option><option>Júpiter</option><option>Saturno</option>
+        </select>
+        <p class="msg"></p>
+      </div>
+
+      <div class="field" data-f="turno">
+        <span class="lbl">Turno de entrenamiento</span>
+        <div class="opts">
+          <label class="pill"><input type="radio" name="turno" value="Matutino"><span>🌅 Matutino</span></label>
+          <label class="pill"><input type="radio" name="turno" value="Vespertino"><span>🌇 Vespertino</span></label>
+          <label class="pill"><input type="radio" name="turno" value="Nocturno"><span>🌙 Nocturno</span></label>
+        </div>
+        <p class="msg"></p>
+      </div>
+
+      <div class="field" data-f="interes">
+        <span class="lbl">Intereses</span>
+        <div class="opts">
+          <label class="pill"><input type="checkbox" name="interes" value="Cohetes"><span>🚀 Cohetes</span></label>
+          <label class="pill"><input type="checkbox" name="interes" value="Telescopios"><span>🔭 Telescopios</span></label>
+          <label class="pill"><input type="checkbox" name="interes" value="Robots"><span>🤖 Robots</span></label>
+          <label class="pill"><input type="checkbox" name="interes" value="Galaxias"><span>🌌 Galaxias</span></label>
+        </div>
+        <p class="msg"></p>
+      </div>
+
+      <div class="field">
+        <label for="comentarios">Comentarios</label>
+        <textarea id="comentarios" name="comentarios" rows="3" maxlength="120" placeholder="Cuéntanos por qué quieres ser cadete…"></textarea>
+        <div class="counter" id="contador">0 / 120</div>
+      </div>
+
+      <div class="field" data-f="acepto">
+        <label class="terms"><input type="checkbox" id="acepto" name="acepto"><span>Acepto el código de conducta de la Academia.</span></label>
+        <p class="msg"></p>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn main">Enviar registro 🚀</button>
+        <button type="reset" class="btn ghost">Limpiar</button>
+      </div>
+    </form>
+
+    <aside class="card badge" id="credencial" aria-live="polite">
+      <div class="tag">ACADEMIA ESTELAR</div>
+      <div class="avatar" id="cAvatar">🧑‍🚀</div>
+      <h3 id="cNombre">Cadete sin nombre</h3>
+      <dl>
+        <dt>Planeta</dt><dd id="cPlaneta">—</dd>
+        <dt>Turno</dt><dd id="cTurno">—</dd>
+        <dt>Intereses</dt><dd><div class="tags" id="cInt"><b style="color:var(--muted);font-weight:400">—</b></div></dd>
+      </dl>
+      <div class="barcode"></div>
+      <div class="stamp">REGISTRADO</div>
+    </aside>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+<canvas id="confetti"></canvas>
+
+<script>
+const f = document.getElementById("registro");
+const $ = s => document.querySelector(s);
+const EMO = { Mercurio: "☿️", Venus: "🌕", Tierra: "🌍", Marte: "🔴", "Júpiter": "🟠", Saturno: "🪐" };
+
+/* ---------- Utilidad: aviso emergente ---------- */
+let tt;
+function toast(txt) {
+  const t = $("#toast"); t.textContent = txt; t.classList.add("show");
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+/* ---------- Validación: una regla por campo ---------- */
+const reglas = {
+  nombre() {
+    const v = f.nombre.value.trim();
+    if (v.length < 3) return "Escribe al menos 3 caracteres.";
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]+$/.test(v)) return "Solo se permiten letras y espacios.";
+    return "";
+  },
+  correo() {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.correo.value.trim()) ? "" : "Escribe un correo válido, como nombre@dominio.com.";
+  },
+  edad() {
+    const n = Number(f.edad.value);
+    return f.edad.value && n >= 10 && n <= 99 ? "" : "Ingresa una edad entre 10 y 99.";
+  },
+  clave() {
+    const v = f.clave.value;
+    if (v.length < 8) return "Usa al menos 8 caracteres.";
+    if (!/[A-Z]/.test(v) || !/\d/.test(v)) return "Incluye una mayúscula y un número.";
+    return "";
+  },
+  clave2() { return f.clave2.value && f.clave2.value === f.clave.value ? "" : "Las contraseñas no coinciden."; },
+  planeta() { return f.planeta.selectedIndex > 0 ? "" : "Elige tu planeta favorito."; },
+  turno() { return f.turno.value ? "" : "Selecciona un turno."; },
+  interes() { return f.querySelectorAll("input[name=interes]:checked").length ? "" : "Marca al menos un interés."; },
+  acepto() { return f.acepto.checked ? "" : "Debes aceptar el código de conducta."; }
+};
+function revisar(nombre) {
+  const msg = reglas[nombre](), caja = document.querySelector('[data-f="' + nombre + '"]');
+  caja.classList.toggle("bad", !!msg); caja.classList.toggle("good", !msg);
+  caja.querySelector(".msg").textContent = msg;
+  return !msg;
+}
+
+/* ---------- Modelo de eventos ---------- */
+// Delegación: focusout y change burbujean desde cada campo hasta el formulario
+["focusout", "change"].forEach(ev => f.addEventListener(ev, e => {
+  const caja = e.target.closest("[data-f]");
+  if (!caja) return;
+  revisar(caja.dataset.f);
+  if (caja.dataset.f === "clave" && f.clave2.value) revisar("clave2");
+}));
+
+// keydown: el nombre no admite números
+f.nombre.addEventListener("keydown", e => {
+  if (e.key.length === 1 && /\d/.test(e.key)) { e.preventDefault(); toast("El nombre no lleva números 🙂"); }
+});
+
+// input: contador, fuerza de contraseña y credencial en vivo
+f.comentarios.addEventListener("input", () => { $("#contador").textContent = f.comentarios.value.length + " / 120"; });
+f.clave.addEventListener("input", fuerza);
+f.addEventListener("input", vistaPrevia);
+f.addEventListener("change", vistaPrevia);
+
+// click: mostrar u ocultar contraseña
+document.querySelectorAll(".eye").forEach(b => b.addEventListener("click", () => {
+  const i = f.elements[b.dataset.t], oculto = i.type === "password";
+  i.type = oculto ? "text" : "password"; b.textContent = oculto ? "🙈" : "👁";
+}));
+
+/* ---------- Utilidades ---------- */
+function fuerza() {
+  const v = f.clave.value;
+  let n = 0;
+  if (v.length >= 8) n++; if (/[A-Z]/.test(v) && /[a-z]/.test(v)) n++; if (/\d/.test(v)) n++; if (/[^A-Za-z0-9]/.test(v)) n++;
+  const niv = [["0%", "transparent", "Fuerza de la contraseña"], ["25%", "#ff7b8a", "Débil"], ["50%", "#ffb86b", "Regular"], ["75%", "#ffd166", "Buena"], ["100%", "#6ff2b0", "Excelente"]][v ? n || 1 : 0];
+  const b = $("#fuerza"); b.style.width = niv[0]; b.style.background = niv[1]; $("#fuerzaTxt").textContent = niv[2];
+}
+function vistaPrevia() {
+  $("#cNombre").textContent = f.nombre.value.trim() || "Cadete sin nombre";
+  $("#cPlaneta").textContent = f.planeta.value || "—";
+  $("#cAvatar").textContent = EMO[f.planeta.value] || "🧑‍🚀";
+  $("#cTurno").textContent = f.turno.value || "—";
+  const c = $("#cInt"); c.textContent = "";
+  const sel = [...f.querySelectorAll("input[name=interes]:checked")].map(x => x.value);
+  if (!sel.length) c.innerHTML = '<b style="color:var(--muted);font-weight:400">—</b>';
+  sel.forEach(x => { const s = document.createElement("span"); s.textContent = x; c.append(s); });
+}
+
+/* ---------- submit y reset ---------- */
+f.addEventListener("submit", e => {
+  e.preventDefault();
+  const malos = Object.keys(reglas).filter(n => !revisar(n));
+  if (malos.length) {
+    f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake");
+    const caja = document.querySelector('[data-f="' + malos[0] + '"]');
+    caja.scrollIntoView({ block: "center" });
+    const campo = caja.querySelector("input,select,textarea"); if (campo) campo.focus({ preventScroll: true });
+    toast("Revisa " + malos.length + (malos.length === 1 ? " campo" : " campos") + " antes de enviar");
+    return;
+  }
+  $("#credencial").classList.add("ok");
+  toast("¡Registro enviado! Bienvenido, " + f.nombre.value.trim().split(" ")[0] + " 🚀");
+  confeti();
+});
+f.addEventListener("reset", () => setTimeout(() => {
+  document.querySelectorAll(".field").forEach(c => { c.classList.remove("bad", "good"); const m = c.querySelector(".msg"); if (m) m.textContent = ""; });
+  $("#credencial").classList.remove("ok");
+  $("#contador").textContent = "0 / 120"; fuerza(); vistaPrevia();
+}, 0));
+
+/* ---------- Fondo de estrellas ---------- */
+const sc = $("#stars"), sx = sc.getContext("2d"), lento = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let estrellas = [], fugaz = null;
+function ajustar() {
+  sc.width = innerWidth; sc.height = innerHeight;
+  estrellas = Array.from({ length: Math.floor(innerWidth * innerHeight / 7000) }, () =>
+    ({ x: Math.random() * sc.width, y: Math.random() * sc.height, r: Math.random() * 1.6 + .3, f: Math.random() * 6 }));
+}
+function cielo(t) {
+  sx.clearRect(0, 0, sc.width, sc.height);
+  estrellas.forEach(s => { sx.globalAlpha = .45 + .55 * Math.sin(t / 700 + s.f) ** 2; sx.fillStyle = s.r > 1.3 ? "#bfe9ff" : "#fff"; sx.fillRect(s.x, s.y, s.r, s.r); });
+  sx.globalAlpha = 1;
+  if (!fugaz && Math.random() < .004) fugaz = { x: Math.random() * sc.width, y: Math.random() * sc.height * .4, l: 0 };
+  if (fugaz) {
+    const g = sx.createLinearGradient(fugaz.x, fugaz.y, fugaz.x - 90, fugaz.y - 45);
+    g.addColorStop(0, "rgba(255,255,255,.9)"); g.addColorStop(1, "rgba(255,255,255,0)");
+    sx.strokeStyle = g; sx.lineWidth = 2; sx.beginPath(); sx.moveTo(fugaz.x, fugaz.y); sx.lineTo(fugaz.x - 90, fugaz.y - 45); sx.stroke();
+    fugaz.x += 10; fugaz.y += 5; if (++fugaz.l > 60) fugaz = null;
+  }
+  if (!lento) requestAnimationFrame(cielo);
+}
+addEventListener("resize", ajustar); ajustar(); requestAnimationFrame(cielo);
+
+/* ---------- Confeti ---------- */
+function confeti() {
+  const c = $("#confetti"), x = c.getContext("2d"); c.width = innerWidth; c.height = innerHeight;
+  const col = ["#7c5cff", "#ff6bd6", "#5ee7ff", "#ffd166", "#6ff2b0"];
+  const p = Array.from({ length: 150 }, () => ({ x: innerWidth / 2, y: innerHeight * .6, vx: (Math.random() - .5) * 16, vy: -Math.random() * 15 - 4, w: Math.random() * 8 + 4, h: Math.random() * 5 + 3, a: Math.random() * 6, c: col[Math.floor(Math.random() * 5)] }));
+  (function paso() {
+    x.clearRect(0, 0, c.width, c.height); let vivo = false;
+    p.forEach(q => { q.vy += .35; q.x += q.vx; q.y += q.vy; q.a += .2; if (q.y < c.height + 20) vivo = true;
+      x.save(); x.translate(q.x, q.y); x.rotate(q.a); x.fillStyle = q.c; x.fillRect(-q.w / 2, -q.h / 2, q.w, q.h); x.restore(); });
+    if (vivo) requestAnimationFrame(paso); else x.clearRect(0, 0, c.width, c.height);
+  })();
+}
+</script>
+</body>
+</html>
